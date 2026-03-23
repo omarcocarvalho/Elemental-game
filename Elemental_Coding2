@@ -8,9 +8,13 @@ float playerX, playerY = 350, playerSpeed = 8;
 int fire = 0, water = 0, earth = 0, air = 0; 
 int target = 4;
 
-// Orb Variables
+// Main Orb Variables
 float orbX, orbY, orbSpeed = 4.5;
 int orbType; // 0=Fire, 1=Water, 2=Earth, 3=Air
+
+// DEADLY VOID ORB Variables
+float deathX, deathY;
+float deathSpeed = 5.0; // Slightly faster for danger
 
 void setup() {
   size(600, 400);
@@ -35,19 +39,22 @@ void drawHomeScreen() {
   textSize(18);
   fill(0, 255, 150);
   text("Press 'Enter' to Play", width/2, height/2 + 20);
-  fill(200);
-  text("Use LEFT and RIGHT Arrows to move", width/2, height/2 + 50);
+  fill(255, 50, 50);
+  text("AVOID THE BLACK VOID ORBS!", width/2, height/2 + 50);
 }
 
 void playGame() {
   drawPlayer();
   handleInput();
-  drawOrb();
-  checkCollision();
+  
+  // Update and draw both orbs
+  drawMainOrb();
+  drawDeathOrb();
+  
+  checkCollisions();
   checkMissed();
   displayUI();
   
-  // Win condition: All 4 elements reached target
   if (fire >= target && water >= target && earth >= target && air >= target) {
     state = 2;
   }
@@ -58,8 +65,6 @@ void drawGameOver() {
   if (state == 2) {
     fill(0, 255, 100);
     text("YOU WIN!", width/2, height/2);
-    textSize(15);
-    text("You mastered the elements.", width/2, height/2 + 30);
   } else {
     fill(255, 50, 50);
     text("GAME OVER", width/2, height/2);
@@ -84,59 +89,64 @@ void handleInput() {
     if (keyCode == LEFT) playerX -= playerSpeed;
     if (keyCode == RIGHT) playerX += playerSpeed;
   }
-  
-  // Rustic boundary checks
-  if (playerX < 30) {
-    playerX = 30;
-  } else if (playerX > width - 30) {
-    playerX = width - 30;
-  }
+  if (playerX < 30) playerX = 30;
+  else if (playerX > width - 30) playerX = width - 30;
 }
 
-void drawOrb() {
+void drawMainOrb() {
   int currentCount = getCountByType(orbType);
-  
-  // If the score for this element is full, it becomes deadly (Red/White)
   if (currentCount >= target) {
     fill(255, 0, 0); 
     stroke(255);
     strokeWeight(2);
   } else {
     noStroke();
-    if (orbType == 0) fill(255, 60, 0);    // Fire: Red
-    else if (orbType == 1) fill(0, 120, 255); // Water: Blue
-    else if (orbType == 2) fill(139, 69, 19);  // Earth: Brown
-    else if (orbType == 3) fill(180);          // Air: Grey
+    if (orbType == 0) fill(255, 60, 0);
+    else if (orbType == 1) fill(0, 120, 255);
+    else if (orbType == 2) fill(139, 69, 19);
+    else if (orbType == 3) fill(180);
   }
-  
   ellipse(orbX, orbY, 22, 22);
   orbY += orbSpeed;
 }
 
-void checkCollision() {
+void drawDeathOrb() {
+  fill(0); // Black
+  stroke(255, 0, 0); // Red outline
+  strokeWeight(2);
+  ellipse(deathX, deathY, 25, 25);
+  deathY += deathSpeed;
+  
+  if (deathY > height) resetDeathOrb();
+}
+
+void checkCollisions() {
+  // Check Main Orb Collision
   if (orbY > playerY - 15 && orbY < playerY + 10) {
     if (orbX > playerX - 35 && orbX < playerX + 35) {
-      if (getCountByType(orbType) >= target) {
-        state = 3; // Deadly!
-      } else {
+      if (getCountByType(orbType) >= target) state = 3;
+      else {
         updateScore(orbType);
-        resetOrb();
+        resetMainOrb();
       }
+    }
+  }
+  
+  // Check Death Orb Collision
+  if (deathY > playerY - 15 && deathY < playerY + 10) {
+    if (deathX > playerX - 35 && deathX < playerX + 35) {
+      state = 3; // Instant Game Over
     }
   }
 }
 
 void checkMissed() {
   if (orbY > height) {
-    if (getCountByType(orbType) < target) {
-      state = 3; // Game Over if you needed that orb
-    } else {
-      resetOrb(); // Safe to miss if you already have 4
-    }
+    if (getCountByType(orbType) < target) state = 3;
+    else resetMainOrb();
   }
 }
 
-// Helpers for the 4 types
 int getCountByType(int type) {
   if (type == 0) return fire;
   if (type == 1) return water;
@@ -161,18 +171,24 @@ void displayUI() {
   text("AIR: " + air + "/4", 300, 30);
 }
 
-void resetOrb() {
+void resetMainOrb() {
   orbX = random(30, width - 30);
   orbY = -20;
   orbType = int(random(4)); 
-  orbSpeed += 0.1; 
+  orbSpeed += 0.05; 
+}
+
+void resetDeathOrb() {
+  deathX = random(30, width - 30);
+  deathY = -random(100, 300); // Spawns at a random height above
 }
 
 void resetGame() {
   playerX = width/2;
   fire = 0; water = 0; earth = 0; air = 0;
   orbSpeed = 4.5;
-  resetOrb();
+  resetMainOrb();
+  resetDeathOrb();
 }
 
 void keyPressed() {
