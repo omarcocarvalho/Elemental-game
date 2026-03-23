@@ -81,12 +81,12 @@ void drawHomeScreen() {
   textAlign(CENTER);
   fill(255);
   textSize(40);
-  text("ELEMENTAL COLLECTOR", width/2, height/2 - 20);
+  text("Rhomus: The Elemental Guardian", width/2, height/2 - 20);
   textSize(18);
   fill(255, 255, 0); 
-  text("The World is Fading...", width/2, height/2 + 15);
+  text("Avoid black and red orbs with contrasting shell", width/2, height/2 + 15);
   fill(255);
-  text("Press 'Enter' to Heal the Land", width/2, height/2 + 45);
+  text("Press 'Enter' to restore the balance of nature", width/2, height/2 + 45);
 }
 
 void playGame() {
@@ -114,16 +114,17 @@ void drawGameOver() {
   if (state == 2) {
     fill(255);
     textSize(40);
-    text("BALANCE RESTORED!", width/2, height/2);
-    textSize(20);
     fill(0, 255, 150);
-    text("The Land is Green Again", width/2, height/2 + 40);
+    text("YOU WON!", width/2, height/2);
+    textSize(18);
+    fill(0, 255, 150);
+    text("Balance was restored!", width/2, height/2 + 40);
   } else {
     fill(255, 50, 50);
     textSize(40);
     text("GAME OVER", width/2, height/2);
     textSize(18);
-    text("The Land has Fallen", width/2, height/2 + 35);
+    text("The unbalance turned the land into a wasteland", width/2, height/2 + 35);
   }
   
   fill(255);
