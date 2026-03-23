@@ -21,27 +21,60 @@ void setup() {
 }
 
 void draw() {
-  background(30, 30, 45);
+  // 1. Draw Environment (Yellowish/Ill look)
+  drawBackground();
 
+  // 2. Handle Game States
   if (state == 0) drawHomeScreen();
   else if (state == 1) playGame();
   else if (state >= 2) drawGameOver();
 }
 
+// --- ENVIRONMENT FUNCTIONS ---
+
+void drawBackground() {
+  noStroke();
+  
+  // THE SKY (Light, Sickly Pale Yellow)
+  fill(210, 205, 150);
+  rectMode(CORNER);
+  rect(0, 0, width, 360);
+  
+  // THE MOUNTAINS (Hazy Grey-Yellow)
+  fill(160, 155, 120);
+  triangle(0, 360, 150, 180, 300, 360);
+  triangle(200, 360, 400, 120, 600, 360);
+  
+  // THE GROUND (Dry, Yellowish-Olive)
+  fill(107, 107, 45);
+  rect(0, 360, width, 90);
+  
+  // Horizon Line (Murky Brown)
+  stroke(60, 60, 20);
+  strokeWeight(3);
+  line(0, 360, width, 360);
+  noStroke();
+}
+
 // --- SCREEN FUNCTIONS ---
 
 void drawHomeScreen() {
+  fill(0, 0, 0, 120);
+  rect(0, 0, width, height);
+  
   textAlign(CENTER);
   fill(255);
   textSize(40);
   text("ELEMENTAL COLLECTOR", width/2, height/2 - 20);
   textSize(18);
-  fill(0, 255, 150);
-  text("Press 'Enter' to Play", width/2, height/2 + 20);
+  fill(255, 255, 0); // Yellow prompt to match theme
+  text("The World is Fading...", width/2, height/2 + 15);
+  fill(255);
+  text("Press 'Enter' to Heal the Land", width/2, height/2 + 45);
 }
 
 void playGame() {
-  drawGolem(playerX, playerY); // New Golem Character
+  drawGolem(playerX, playerY);
   handleInput();
   
   drawMainOrb();
@@ -57,20 +90,23 @@ void playGame() {
 }
 
 void drawGameOver() {
+  fill(0, 0, 0, 180);
+  rect(0, 0, width, height);
+  
   textAlign(CENTER);
   if (state == 2) {
     fill(0, 255, 100);
-    text("YOU WIN!", width/2, height/2);
+    text("BALANCE RESTORED!", width/2, height/2);
   } else {
     fill(255, 50, 50);
-    text("GAME OVER", width/2, height/2);
+    text("THE LAND HAS FALLEN", width/2, height/2);
   }
   fill(255);
   textSize(20);
   text("Press 'R' to Restart", width/2, height/2 + 70);
 }
 
-// --- CHARACTER DESIGN (THE GOLEM) ---
+// --- CHARACTER DESIGN ---
 
 void drawGolem(float x, float y) {
   pushMatrix();
@@ -78,25 +114,20 @@ void drawGolem(float x, float y) {
   rectMode(CENTER);
   noStroke();
 
-  // 1. RECTANGLE (Shoulders)
   fill(80, 80, 90); 
-  rect(0, 5, 70, 25, 3);
+  rect(0, 5, 70, 25, 3); // Rectangle (Shoulders)
 
-  // 2. SQUARE (Main Body)
   fill(100, 100, 110);
-  rect(0, 0, 45, 45, 2);
+  rect(0, 0, 45, 45, 2); // Square (Body)
 
-  // 3. TRIANGLE (Head)
   fill(60, 60, 70);
-  triangle(-20, -22, 20, -22, 0, -45);
+  triangle(-20, -22, 20, -22, 0, -45); // Triangle (Head)
 
-  // 4. CIRCLE (The Eye)
   fill(0, 255, 255, 200); 
-  ellipse(0, -10, 15, 15);
+  ellipse(0, -10, 15, 15); // Circle (Eye)
   
-  // 5. DIAMOND (Elemental Core)
   fill(255, 204, 0); 
-  beginShape();
+  beginShape(); // Diamond (Core)
   vertex(0, 5);   
   vertex(10, 15); 
   vertex(0, 25);  
@@ -113,7 +144,6 @@ void handleInput() {
     if (keyCode == LEFT) playerX -= playerSpeed;
     if (keyCode == RIGHT) playerX += playerSpeed;
   }
-  // Boundary checks
   if (playerX < 35) playerX = 35;
   else if (playerX > width - 35) playerX = width - 35;
 }
@@ -127,21 +157,20 @@ void drawMainOrb() {
     if (orbType == 0) fill(255, 60, 0);
     else if (orbType == 1) fill(0, 120, 255);
     else if (orbType == 2) fill(139, 69, 19);
-    else if (orbType == 3) fill(180);
+    else if (orbType == 3) fill(240); // Lighter air for contrast
   }
   ellipse(orbX, orbY, 22, 22);
   orbY += orbSpeed;
 }
 
 void drawDeathOrb() {
-  fill(0); stroke(255, 0, 0); strokeWeight(2);
+  fill(0); stroke(255, 50, 50); strokeWeight(2);
   ellipse(deathX, deathY, 25, 25);
   deathY += deathSpeed;
   if (deathY > height) resetDeathOrb();
 }
 
 void checkCollisions() {
-  // Golem hitbox is roughly 70 wide (shoulders) and 60 high
   if (orbY > playerY - 45 && orbY < playerY + 20) {
     if (orbX > playerX - 35 && orbX < playerX + 35) {
       if (getCountByType(orbType) >= target) state = 3;
@@ -197,7 +226,7 @@ void resetMainOrb() {
 
 void resetDeathOrb() {
   deathX = random(30, width - 30);
-  deathY = -random(100, 500);
+  deathY = -random(100, 600);
 }
 
 void resetGame() {
