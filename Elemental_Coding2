@@ -171,13 +171,13 @@ void drawGolem(float x, float y) {
                     //middle of the new grid
   noStroke();
 
-// Torso
-  fill(100, 100, 110); 
-  rect(0, 0, 45, 45, 2); 
-  
 // Arms
   fill(80, 80, 90); 
   rect(0, 5, 70, 25, 3); 
+  
+// Torso
+  fill(100, 100, 110); 
+  rect(0, 0, 45, 45, 2); 
 
 // Hat
   fill(#0039A7); 
@@ -201,7 +201,7 @@ void drawGolem(float x, float y) {
   popMatrix(); // Reset coordinate system
 }
 
-// Player movement
+// Player movement keys
 void handleInput() {
   // Arrow key movement
   if (keyPressed && key == CODED) {
@@ -214,81 +214,120 @@ void handleInput() {
   else if (playerX > width - 35) playerX = width - 35;
 }
 
-// Orbs functions ------------------
+// Elemental orbs functions
 void drawMainOrb() {
+
+// storing current value after calling a funtion
   int currentCount = getCountByType(orbType);
   
-// If target was achieved, the orb changes
-//colour and becomes deadly
+// Check if orb should be Deadly
   if (currentCount >= target) {
-    fill(255, 0, 0); stroke(255); strokeWeight(2);
-  } else {
+    fill(255, 0, 0); 
+    stroke(255); 
+    strokeWeight(2);
+    
+// If not deadly, check for each element colors
+  } else if (orbType == 0) {
     noStroke();
-    if (orbType == 0) fill(255, 60, 0);    // Fire
-    else if (orbType == 1) fill(0, 120, 255); // Water
-    else if (orbType == 2) fill(139, 69, 19);  // Earth
-    else if (orbType == 3) fill(240);          // Air
+    fill(255, 60, 0);
+  } 
+  else if (orbType == 1) {
+    noStroke();
+    fill(0, 120, 255);
+  } 
+  else if (orbType == 2) {
+    noStroke();
+    fill(139, 69, 19);
+  } 
+  else if (orbType == 3) {
+    noStroke();
+    fill(240);
   }
+
+// Draws the orb and move it
   ellipse(orbX, orbY, 22, 22);
-  orbY += orbSpeed; // Make it fall
+  orbY += orbSpeed; 
 }
 
+// Deadly orbs function
 void drawDeathOrb() {
-  // Draw the permanent "Void" hazard orb
-  fill(0); stroke(255, 50, 50); strokeWeight(2);
+  // Draw the permanent design for the orb
+  fill(0);
+  stroke(255, 50, 50);
+  strokeWeight(2);
   ellipse(deathX, deathY, 25, 25);
   deathY += deathSpeed;
   
-  // If it falls off screen, reset it at a random height above the top
-  if (deathY > height) resetDeathOrb();
+// If it falls off screen, resets it at a random
+//height above the top
+  if (deathY > height){
+    resetDeathOrb();
+  }
 }
 
+//Collision function
 void checkCollisions() {
-  // Check collision with Main Elemental Orb
-  if (orbY > playerY - 45 && orbY < playerY + 20) {
-    if (orbX > playerX - 35 && orbX < playerX + 35) {
-      // If we touch an orb we already have 4 of, it's Game Over
-      if (getCountByType(orbType) >= target) state = 3;
-      else {
-        updateScore(orbType); // Increase the correct counter
-        resetMainOrb();       // Spawn a new one
-      }
+  
+// Checks main orb collision to the player
+  if (orbY > playerY - 45 && orbY < playerY + 20 && orbX > playerX - 35 && orbX < playerX + 35) {
+    
+// If target reached, this orb is now "poison"
+    if (getCountByType(orbType) >= target) {
+      state = 3; 
+    } else {
+      updateScore(orbType); 
+      resetMainOrb();
     }
   }
   
-  // Check collision with the Black Void Orb (Instant Loss)
-  if (deathY > playerY - 45 && deathY < playerY + 20) {
-    if (deathX > playerX - 35 && deathX < playerX + 35) {
+// Checks deadly orb collision
+  if (deathY > playerY - 45 && deathY < playerY + 20 && deathX > playerX - 35 && deathX < playerX + 35) {
+    state = 3;
+  }
+}
+
+// Checks if player missed one elemental orb
+void checkMissed() {
+
+// checks if orb left the screen
+  if (orbY > height) {
+    
+// if orb wasn' collected, the player loses
+    if (getCountByType(orbType) < target){
       state = 3;
+    } else {
+      resetMainOrb(); // If you already have 4, it's safe to miss
     }
   }
 }
 
-void checkMissed() {
-  // If an elemental orb falls past the bottom...
-  if (orbY > height) {
-    // If you haven't finished collecting that element yet, you lose
-    if (getCountByType(orbType) < target) state = 3;
-    else resetMainOrb(); // If you already had 4, it's safe to miss
+// Function returns the score based on the current orb type
+int getCountByType(int type) {
+  if (type == 0){
+    return fire;
+  } else if (type == 1){ 
+    return water; 
+  } else if (type == 2){ 
+    return earth;
+  } else {
+    return air;
   }
 }
 
-// HELPER: Returns the score based on the current orb type
-int getCountByType(int type) {
-  if (type == 0) return fire;
-  if (type == 1) return water;
-  if (type == 2) return earth;
-  return air;
-}
-
-// HELPER: Adds 1 to the correct elemental score
+// Adds 1 to the correct elemental score
 void updateScore(int type) {
-  if (type == 0) fire++;
-  else if (type == 1) water++;
-  else if (type == 2) earth++;
-  else if (type == 3) air++;
+  if (type == 0){
+    fire++;
+  } else if (type == 1){ 
+    water++; 
+  } else if (type == 2){ 
+    earth++; 
+  } else if (type == 3){
+  air++; 
+  }
 }
 
+//Displays the orb count on the screen
 void displayUI() {
   fill(255); textSize(14); textAlign(LEFT);
   text("FIRE: " + fire + "/4", 20, 30);
@@ -297,6 +336,7 @@ void displayUI() {
   text("AIR: " + air + "/4", 300, 30);
 }
 
+// Chooses the random position and element to fall
 void resetMainOrb() {
   orbX = random(30, width - 30);
   orbY = -20;
@@ -304,21 +344,27 @@ void resetMainOrb() {
   orbSpeed += 0.05;         // Slightly increase game speed over time
 }
 
+// Randomly drops the orbs
 void resetDeathOrb() {
   deathX = random(30, width - 30);
-  deathY = -random(100, 600); // Random offset so it's not predictable
+  deathY = -random(100, 600); // Orbs falls from different hight from the elemental orb
 }
 
+// Resets all values of the previous game to start fresh
 void resetGame() {
   playerX = width/2;
-  fire = 0; water = 0; earth = 0; air = 0;
+  fire = 0; 
+  water = 0; 
+  earth = 0; 
+  air = 0;
   orbSpeed = 4.5;
   resetMainOrb();
   resetDeathOrb();
 }
 
+// Implements keys to navigate between screens and restart
 void keyPressed() {
-  // Use Enter to navigate between screens and restart
+  
   if (key == ENTER || key == RETURN) {
     if (state == 0) {
       state = 1; // Play
