@@ -1,83 +1,104 @@
-// --- GLOBAL VARIABLES ---
-// Game States: 0 = Menu, 1 = Playing, 2 = Win (Healed), 3 = Loss (Fallen)
+// Game States:
+//0 = Menu, 1 = Playing, 2 = Win, 3 = Loss
+
 int state = 0; 
 
-// Player Position and Movement
-float playerX, playerY = 350, playerSpeed = 8;
+// Player position and movement
+float playerX;
+int playerY = 350;
+int playerSpeed = 8;
 
-// Score Tracking for the 4 Elements
-int fire = 0, water = 0, earth = 0, air = 0; 
+// Score tracking for the 4 elements
+int fire = 0;
+int water = 0;
+int earth = 0;
+int air = 0; 
 int target = 4; // Number of each element needed to win
 
-// Main Elemental Orb Variables
-float orbX, orbY, orbSpeed = 4.5;
+// Elemental orbs variables
+float orbX;
+float orbY;
+float orbSpeed = 4.5;
 int orbType; // 0=Fire, 1=Water, 2=Earth, 3=Air
 
-// Deadly "Void" Orb Variables
-float deathX, deathY, deathSpeed = 5.0;
+// Deadly orbs variables
+float deathX;
+float deathY; 
+float deathSpeed = 5.0;
 
 void setup() {
   size(600, 450);
-  resetGame(); // Initialize positions and scores
+  resetGame(); // Used to initialize 
+               //positions and scores
 }
 
 void draw() {
-  // Always draw the background first so it stays behind the game objects
   drawBackground();
 
-  // Switch between screens based on the current game state
-  if (state == 0) drawHomeScreen();
-  else if (state == 1) playGame();
-  else if (state >= 2) drawGameOver();
+// Switch background using game state
+  if (state == 0){
+    drawHomeScreen();
+  } else if (state == 1){
+    playGame();
+  } else if (state >= 2){
+    drawGameOver();
+  } 
 }
 
-// --- ENVIRONMENT FUNCTIONS ---
-
+// Background design and effects 
 void drawBackground() {
   noStroke();
-  color skyColor, mountainColor, groundColor, horizonColor;
+  
+// Declaring the varibles for the background colours
+  color skyColor;
+  color mountainColor;
+  color groundColor; 
+  color horizonColor;
 
-  // If the player wins, shift from "sickly" colors to "vibrant" colors
-  if (state == 2) { 
-    skyColor = color(50, 150, 255);      // Vibrant Blue
-    mountainColor = color(70, 100, 150); // Clear Blue-Grey
-    groundColor = color(34, 139, 34);    // Forest Green
-    horizonColor = color(20, 80, 20);    
+// Initialises the colours for the 
+//background for each situation
+  if (state == 2) { //
+    skyColor = color(50, 150, 255);
+    mountainColor = color(70, 100, 150);
+    groundColor = color(34, 139, 34);
+    horizonColor = color(20, 80, 20);
   } else {
-    skyColor = color(210, 205, 150);      // Sickly Pale Yellow
-    mountainColor = color(160, 155, 120); // Hazy Grey-Yellow
-    groundColor = color(107, 107, 45);    // Dry Olive/Brown
-    horizonColor = color(60, 60, 20);     
+    skyColor = color(210, 205, 150);
+    mountainColor = color(160, 155, 120);
+    groundColor = color(107, 107, 45);
+    horizonColor = color(60, 60, 20);
   }
   
-  // Draw the sky
+// Draws the sky
   fill(skyColor);
   rectMode(CORNER);
   rect(0, 0, width, 360);
   
-  // Draw two background mountains using triangles
+// Draws two mountains
   fill(mountainColor);
   triangle(0, 360, 150, 180, 300, 360);
   triangle(200, 360, 400, 120, 600, 360);
   
-  // Draw the ground
+// Draws the ground
   fill(groundColor);
   rect(0, 360, width, 90);
   
-  // Draw the horizon line for visual separation
+// Draws the horizon line between the ground and sky
   stroke(horizonColor);
-  strokeWeight(3);
+  strokeWeight(7);
   line(0, 360, width, 360);
   noStroke();
 }
 
-// --- SCREEN FUNCTIONS ---
-
+// Small functions for each game state
+// Homescreen design function
 void drawHomeScreen() {
-  // Semi-transparent overlay to help text stand out
-  fill(0, 0, 0, 120);
+  
+// Semi-transparent filter
+  fill(0, 0, 0, 120); // R, G, B,transparencyLevel
   rect(0, 0, width, height);
   
+// Homescreen texts
   textAlign(CENTER);
   fill(255);
   textSize(40);
@@ -89,28 +110,36 @@ void drawHomeScreen() {
   text("Press 'Enter' to restore the balance of nature", width/2, height/2 + 45);
 }
 
+// Playing state function
 void playGame() {
-  drawGolem(playerX, playerY); // Display the character
-  handleInput();               // Move the character
+
+// Character functions called
+  drawGolem(playerX, playerY);
+  handleInput();
   
-  drawMainOrb();               // Display current elemental orb
-  drawDeathOrb();              // Display the black void orb
+// Elemental orbs functions called
+  drawMainOrb();
+  drawDeathOrb();
+
+// Collision and collection funtions called
+  checkCollisions();
+  checkMissed();
+  displayUI();
   
-  checkCollisions();           // Check if player touched an orb
-  checkMissed();               // Check if an orb fell off screen
-  displayUI();                 // Show the scores at the top
-  
-  // Check if all elements are collected
+  // Check if target was achieved to change game state
   if (fire >= target && water >= target && earth >= target && air >= target) {
-    state = 2; // Victory!
+    state = 2;
   }
 }
 
+// Game result state fucntion
 void drawGameOver() {
   fill(0, 0, 0, 150); 
   rect(0, 0, width, height);
   
   textAlign(CENTER);
+  
+// Decides if the game was won or lost
   if (state == 2) {
     fill(255);
     textSize(40);
@@ -118,58 +147,61 @@ void drawGameOver() {
     text("YOU WON!", width/2, height/2);
     textSize(18);
     fill(0, 255, 150);
-    text("Balance was restored!", width/2, height/2 + 40);
+    text("Balance restored!", width/2, height/2 + 40);
   } else {
     fill(255, 50, 50);
     textSize(40);
     text("GAME OVER", width/2, height/2);
     textSize(18);
-    text("The unbalance turned the land into a wasteland", width/2, height/2 + 35);
+    text("The land became a wasteland", width/2, height/2 + 35);
   }
-  
-  fill(255);
-  textSize(20);
-  text("Press 'Enter' to Restart", width/2, height/2 + 85);
+
+// Restart button to show up after both 
+ fill(255);
+ textSize(20);
+ text("Press 'Enter' to Restart", width/2, height/2 + 85);
 }
 
-// --- CHARACTER DESIGN (THE GOLEM) ---
-
+// Golem design  function
 void drawGolem(float x, float y) {
-  pushMatrix();
-  translate(x, y); // Move coordinate system to player position
-  rectMode(CENTER);
+ 
+  pushMatrix(); // saves grid position
+  translate(x, y); // moves grid point to golem's location
+  rectMode(CENTER); // golem's torso in the 
+                    //middle of the new grid
   noStroke();
 
-  // 1. RECTANGLE (Shoulders) - Sturdy Grey
+// Torso
+  fill(100, 100, 110); 
+  rect(0, 0, 45, 45, 2); 
+  
+// Arms
   fill(80, 80, 90); 
   rect(0, 5, 70, 25, 3); 
 
-  // 2. SQUARE (Main Body) - Central Grey Torso
-  fill(100, 100, 110); 
-  rect(0, 0, 45, 45, 2); 
-
-  // 3. TRIANGLE (Head) - Deep Blue #0039A7
+// Hat
   fill(#0039A7); 
   triangle(-20, -22, 20, -22, 0, -45); 
 
-  // 4. CIRCLE (Eye) - Glowing Orange #E85500
+// Eye
   fill(#E85500); 
   ellipse(0, -10, 15, 15); 
   
-  // 5. DIAMOND (Chest Crystal) - Elemental Core #07ADB4
+// Chest Crystal
   fill(#07ADB4); 
-  beginShape(); 
+  
+  beginShape(); // start drawing shape
+// Defines points to draw a diamond
   vertex(0, 5);   
   vertex(10, 15); 
   vertex(0, 25);  
   vertex(-10, 15);
-  endShape(CLOSE);
+  endShape(CLOSE); // finishes drawing shape
 
   popMatrix(); // Reset coordinate system
 }
 
-// --- GAME LOGIC ---
-
+// Player movement
 void handleInput() {
   // Arrow key movement
   if (keyPressed && key == CODED) {
@@ -177,15 +209,17 @@ void handleInput() {
     if (keyCode == RIGHT) playerX += playerSpeed;
   }
   
-  // "Rustic" Boundary Logic: Stops Golem at screen edges
+  // Prevents player from going beyong the screen
   if (playerX < 35) playerX = 35;
   else if (playerX > width - 35) playerX = width - 35;
 }
 
+// Orbs functions ------------------
 void drawMainOrb() {
   int currentCount = getCountByType(orbType);
   
-  // If we already have 4 of this element, it turns red and deadly
+// If target was achieved, the orb changes
+//colour and becomes deadly
   if (currentCount >= target) {
     fill(255, 0, 0); stroke(255); strokeWeight(2);
   } else {
