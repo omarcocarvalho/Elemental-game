@@ -1,41 +1,35 @@
-// Game States:
-//0 = Menu, 1 = Playing, 2 = Win, 3 = Loss
-
-int state = 0; 
+// Game States: 0 = Menu, 1 = Playing, 2 = Win, 3 = Loss
+int state = 0;
 
 // Player position and movement
 float playerX;
 int playerY = 350;
 int playerSpeed = 8;
 
-// Score tracking for the 4 elements
-int fire = 0;
-int water = 0;
-int earth = 0;
-int air = 0; 
-int target = 4; // Number of each element needed to win
+// --- ARRAY ADDED HERE ---
+// Index 0=Fire, 1=Water, 2=Earth, 3=Air
+int[] scores = {0, 0, 0, 0}; 
+String[] labels = {"FIRE", "WATER", "EARTH", "AIR"};
+int target = 4; 
 
 // Elemental orbs variables
 float orbX;
 float orbY;
 float orbSpeed = 4.5;
-int orbType; // 0=Fire, 1=Water, 2=Earth, 3=Air
+int orbType; 
 
 // Deadly orbs variables
 float deathX;
-float deathY; 
+float deathY;
 float deathSpeed = 5.0;
 
 void setup() {
   size(600, 450);
-  resetGame(); // Used to initialize 
-               //positions and scores
+  resetGame();
 }
 
 void draw() {
   drawBackground();
-
-// Switch background using game state
   if (state == 0){
     drawHomeScreen();
   } else if (state == 1){
@@ -45,19 +39,14 @@ void draw() {
   } 
 }
 
-// Background design and effects 
 void drawBackground() {
   noStroke();
-  
-// Declaring the varibles for the background colours
   color skyColor;
   color mountainColor;
   color groundColor; 
   color horizonColor;
 
-// Initialises the colours for the 
-//background for each situation
-  if (state == 2) { //
+  if (state == 2) { 
     skyColor = color(50, 150, 255);
     mountainColor = color(70, 100, 150);
     groundColor = color(34, 139, 34);
@@ -69,84 +58,63 @@ void drawBackground() {
     horizonColor = color(60, 60, 20);
   }
   
-// Draws the sky
   fill(skyColor);
   rectMode(CORNER);
   rect(0, 0, width, 360);
   
-// Draws two mountains
   fill(mountainColor);
   triangle(0, 360, 150, 180, 300, 360);
   triangle(200, 360, 400, 120, 600, 360);
   
-// Draws the ground
   fill(groundColor);
   rect(0, 360, width, 90);
   
-// Draws the horizon line between the ground and sky
   stroke(horizonColor);
   strokeWeight(7);
   line(0, 360, width, 360);
   noStroke();
 }
 
-// Small functions for each game state
-// Homescreen design function
 void drawHomeScreen() {
-  
-// Semi-transparent filter
-  fill(0, 0, 0, 120); // R, G, B,transparencyLevel
+  fill(0, 0, 0, 120);
   rect(0, 0, width, height);
   
-// Homescreen texts
   textAlign(CENTER);
   fill(255);
   textSize(40);
   text("Rhomus: The Elemental Guardian", width/2, height/2 - 20);
   textSize(18);
-  fill(255, 255, 0); 
+  fill(255, 255, 0);
   text("Avoid black and red orbs with contrasting shell", width/2, height/2 + 15);
   fill(255);
   text("Press 'Enter' to restore the balance of nature", width/2, height/2 + 45);
 }
 
-// Playing state function
 void playGame() {
-
-// Character functions called
   drawGolem(playerX, playerY);
   handleInput();
-  
-// Elemental orbs functions called
   drawMainOrb();
   drawDeathOrb();
-
-// Collision and collection funtions called
   checkCollisions();
   checkMissed();
   displayUI();
-  
-  // Check if target was achieved to change game state
-  if (fire >= target && water >= target && earth >= target && air >= target) {
+
+  // Check victory condition using the array
+  if (scores[0] >= target && scores[1] >= target && scores[2] >= target && scores[3] >= target) {
     state = 2;
   }
 }
 
-// Game result state fucntion
 void drawGameOver() {
   fill(0, 0, 0, 150); 
   rect(0, 0, width, height);
-  
   textAlign(CENTER);
-  
-// Decides if the game was won or lost
+
   if (state == 2) {
-    fill(255);
-    textSize(40);
     fill(0, 255, 150);
+    textSize(40);
     text("YOU WON!", width/2, height/2);
     textSize(18);
-    fill(0, 255, 150);
     text("Balance restored!", width/2, height/2 + 40);
   } else {
     fill(255, 50, 50);
@@ -156,221 +124,163 @@ void drawGameOver() {
     text("The land became a wasteland", width/2, height/2 + 35);
   }
 
-// Restart button to show up after both 
- fill(255);
- textSize(20);
- text("Press 'Enter' to Restart", width/2, height/2 + 85);
+  fill(255);
+  textSize(20);
+  text("Press 'Enter' to Restart", width/2, height/2 + 85);
 }
 
-// Golem design  function
 void drawGolem(float x, float y) {
- 
-  pushMatrix(); // saves grid position
-  translate(x, y); // moves grid point to golem's location
-  rectMode(CENTER); // golem's torso in the 
-                    //middle of the new grid
+  pushMatrix();
+  translate(x, y); 
+  rectMode(CENTER);
   noStroke();
-
-// Arms
+  
   fill(80, 80, 90); 
   rect(0, 5, 70, 25, 3); 
   
-// Torso
-  fill(100, 100, 110); 
+  fill(100, 100, 110);
   rect(0, 0, 45, 45, 2); 
 
-// Hat
   fill(#0039A7); 
   triangle(-20, -22, 20, -22, 0, -45); 
 
-// Eye
-  fill(#E85500); 
+  fill(#E85500);
   ellipse(0, -10, 15, 15); 
   
-// Chest Crystal
   fill(#07ADB4); 
-  
-  beginShape(); // start drawing shape
-// Defines points to draw a diamond
+  beginShape();
   vertex(0, 5);   
   vertex(10, 15); 
   vertex(0, 25);  
   vertex(-10, 15);
-  endShape(CLOSE); // finishes drawing shape
+  endShape(CLOSE);
 
-  popMatrix(); // Reset coordinate system
+  popMatrix(); 
 }
 
-// Player movement keys
 void handleInput() {
-  // Arrow key movement
   if (keyPressed && key == CODED) {
     if (keyCode == LEFT) playerX -= playerSpeed;
     if (keyCode == RIGHT) playerX += playerSpeed;
   }
-  
-  // Prevents player from going beyong the screen
   if (playerX < 35) playerX = 35;
   else if (playerX > width - 35) playerX = width - 35;
 }
 
-// Elemental orbs functions
 void drawMainOrb() {
-
-// storing current value after calling a funtion
   int currentCount = getCountByType(orbType);
-  
-// Check if orb should be Deadly
   if (currentCount >= target) {
     fill(255, 0, 0); 
-    stroke(255); 
+    stroke(255);
     strokeWeight(2);
-    
-// If not deadly, check for each element colors
   } else if (orbType == 0) {
     noStroke();
     fill(255, 60, 0);
-  } 
-  else if (orbType == 1) {
+  } else if (orbType == 1) {
     noStroke();
     fill(0, 120, 255);
-  } 
-  else if (orbType == 2) {
+  } else if (orbType == 2) {
     noStroke();
     fill(139, 69, 19);
-  } 
-  else if (orbType == 3) {
+  } else if (orbType == 3) {
     noStroke();
     fill(240);
   }
 
-// Draws the orb and move it
   ellipse(orbX, orbY, 22, 22);
-  orbY += orbSpeed; 
+  orbY += orbSpeed;
 }
 
-// Deadly orbs function
 void drawDeathOrb() {
-  // Draw the permanent design for the orb
   fill(0);
   stroke(255, 50, 50);
   strokeWeight(2);
   ellipse(deathX, deathY, 25, 25);
   deathY += deathSpeed;
   
-// If it falls off screen, resets it at a random
-//height above the top
   if (deathY > height){
     resetDeathOrb();
   }
 }
 
-//Collision function
 void checkCollisions() {
-  
-// Checks main orb collision to the player
   if (orbY > playerY - 45 && orbY < playerY + 20 && orbX > playerX - 35 && orbX < playerX + 35) {
-    
-// If target reached, this orb is now "poison"
     if (getCountByType(orbType) >= target) {
-      state = 3; 
+      state = 3;
     } else {
       updateScore(orbType); 
       resetMainOrb();
     }
   }
   
-// Checks deadly orb collision
   if (deathY > playerY - 45 && deathY < playerY + 20 && deathX > playerX - 35 && deathX < playerX + 35) {
     state = 3;
   }
 }
 
-// Checks if player missed one elemental orb
 void checkMissed() {
-
-// checks if orb left the screen
   if (orbY > height) {
-    
-// if orb wasn' collected, the player loses
     if (getCountByType(orbType) < target){
       state = 3;
     } else {
-      resetMainOrb(); // If you already have 4, it's safe to miss
+      resetMainOrb();
     }
   }
 }
 
-// Function returns the score based on the current orb type
+// Updated to use Array
 int getCountByType(int type) {
-  if (type == 0){
-    return fire;
-  } else if (type == 1){ 
-    return water; 
-  } else if (type == 2){ 
-    return earth;
-  } else {
-    return air;
-  }
+  return scores[type];
 }
 
-// Adds 1 to the correct elemental score
+// Updated to use Array
 void updateScore(int type) {
-  if (type == 0){
-    fire++;
-  } else if (type == 1){ 
-    water++; 
-  } else if (type == 2){ 
-    earth++; 
-  } else if (type == 3){
-  air++; 
+  scores[type]++;
+}
+
+// --- LOOP AND ARRAY IMPLEMENTED HERE ---
+void displayUI() {
+  fill(255); 
+  textSize(14); 
+  textAlign(LEFT);
+  
+  // Using a 'for' loop to iterate through the scores array
+  for (int i = 0; i < scores.length; i++) {
+    float xPos = 20 + (i * 100); // Spaces each text 100 pixels apart
+    text(labels[i] + ": " + scores[i] + "/" + target, xPos, 30);
   }
 }
 
-//Displays the orb count on the screen
-void displayUI() {
-  fill(255); textSize(14); textAlign(LEFT);
-  text("FIRE: " + fire + "/4", 20, 30);
-  text("WATER: " + water + "/4", 110, 30);
-  text("EARTH: " + earth + "/4", 210, 30);
-  text("AIR: " + air + "/4", 300, 30);
-}
-
-// Chooses the random position and element to fall
 void resetMainOrb() {
   orbX = random(30, width - 30);
   orbY = -20;
-  orbType = int(random(4)); // Choose a random element (0-3)
-  orbSpeed += 0.05;         // Slightly increase game speed over time
+  orbType = int(random(4)); 
+  orbSpeed += 0.05;
 }
 
-// Randomly drops the orbs
 void resetDeathOrb() {
   deathX = random(30, width - 30);
-  deathY = -random(100, 600); // Orbs falls from different hight from the elemental orb
+  deathY = -random(100, 600);
 }
 
-// Resets all values of the previous game to start fresh
 void resetGame() {
   playerX = width/2;
-  fire = 0; 
-  water = 0; 
-  earth = 0; 
-  air = 0;
+  // Loop to reset the array
+  for (int i = 0; i < scores.length; i++) {
+    scores[i] = 0;
+  }
   orbSpeed = 4.5;
   resetMainOrb();
   resetDeathOrb();
 }
 
-// Implements keys to navigate between screens and restart
 void keyPressed() {
-  
   if (key == ENTER || key == RETURN) {
     if (state == 0) {
-      state = 1; // Play
+      state = 1;
     } else if (state >= 2) {
       resetGame();
-      state = 0; // Return to Home
+      state = 0;
     }
   }
 }
