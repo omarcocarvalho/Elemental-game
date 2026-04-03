@@ -6,8 +6,7 @@ float playerX;
 int playerY = 350;
 int playerSpeed = 8;
 
-// --- ARRAY ADDED HERE ---
-// Index 0=Fire, 1=Water, 2=Earth, 3=Air
+// scores ={0=Fire, 1=Water, 2=Earth, 3=Air}
 int[] scores = {0, 0, 0, 0}; 
 String[] labels = {"FIRE", "WATER", "EARTH", "AIR"};
 int target = 4; 
@@ -99,7 +98,7 @@ void playGame() {
   checkMissed();
   displayUI();
 
-  // Check victory condition using the array
+  // Check victory condition
   if (scores[0] >= target && scores[1] >= target && scores[2] >= target && scores[3] >= target) {
     state = 2;
   }
@@ -228,23 +227,19 @@ void checkMissed() {
   }
 }
 
-// Updated to use Array
 int getCountByType(int type) {
   return scores[type];
 }
 
-// Updated to use Array
 void updateScore(int type) {
   scores[type]++;
 }
 
-// --- LOOP AND ARRAY IMPLEMENTED HERE ---
 void displayUI() {
   fill(255); 
   textSize(14); 
   textAlign(LEFT);
   
-  // Using a 'for' loop to iterate through the scores array
   for (int i = 0; i < scores.length; i++) {
     float xPos = 20 + (i * 100); // Spaces each text 100 pixels apart
     text(labels[i] + ": " + scores[i] + "/" + target, xPos, 30);
